@@ -57,3 +57,18 @@ lerna-debug.log*
 *.temp
 .thumbs.db
 Thumbs.db
+
+# Screenshots
+/screenshots
+
+# Image files (with exceptions)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.bmp
+*.tiff
+*.webp
+
+# Exceptions - Images to include in repository
+!docs/Screenshot*.png

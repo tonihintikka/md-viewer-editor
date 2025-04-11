@@ -2,7 +2,7 @@
 
 A modern, modular Markdown viewer and editor built with React and Vite.
 
-![Modern Markdown Viewer](https://via.placeholder.com/800x400?text=Modern+Markdown+Viewer)
+![Modern Markdown Viewer](docs/images/Screenshot%202025-04-11%20at%2017.29.10.png)
 
 ## Features
 
