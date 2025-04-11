@@ -1,0 +1,93 @@
+.header {
+  height: 60px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-lg);
+  background-color: var(--color-bg-secondary-light);
+  border-bottom: 1px solid var(--color-border-light);
+  transition: background-color var(--transition-normal), border-color var(--transition-normal);
+}
+
+:global(.dark) .header {
+  background-color: var(--color-bg-secondary-dark);
+  border-color: var(--color-border-dark);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.logo h1 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.icon {
+  fill: var(--color-accent-light);
+}
+
+:global(.dark) .icon {
+  fill: var(--color-accent-dark);
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.editButton {
+  padding: var(--spacing-xs) var(--spacing-md);
+  background-color: var(--color-accent-light);
+  color: white;
+  border: none;
+  border-radius: var(--border-radius-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+
+.editButton:hover {
+  background-color: var(--color-accent-hover-light);
+}
+
+:global(.dark) .editButton {
+  background-color: var(--color-accent-dark);
+}
+
+:global(.dark) .editButton:hover {
+  background-color: var(--color-accent-hover-dark);
+}
+
+.themeToggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xs);
+  border-radius: 50%;
+  transition: background-color var(--transition-fast);
+}
+
+.themeToggle:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .themeToggle:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.themeToggle svg {
+  fill: var(--color-text-primary-light);
+  transition: fill var(--transition-normal);
+}
+
+:global(.dark) .themeToggle svg {
+  fill: var(--color-text-primary-dark);
+}

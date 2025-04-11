@@ -1,0 +1,85 @@
+.dropZone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-xl);
+  background-color: var(--color-bg-secondary-light);
+  border: 2px dashed var(--color-border-light);
+  border-radius: var(--border-radius-md);
+  margin: var(--spacing-lg);
+  transition: all var(--transition-normal);
+}
+
+:global(.dark) .dropZone {
+  background-color: var(--color-bg-secondary-dark);
+  border-color: var(--color-border-dark);
+}
+
+.dropZone.dragging {
+  border-color: var(--color-accent-light);
+  background-color: rgba(13, 110, 253, 0.05);
+}
+
+:global(.dark) .dropZone.dragging {
+  border-color: var(--color-accent-dark);
+  background-color: rgba(13, 110, 253, 0.1);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 400px;
+}
+
+.icon {
+  fill: var(--color-text-secondary-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+:global(.dark) .icon {
+  fill: var(--color-text-secondary-dark);
+}
+
+.content h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: var(--spacing-md);
+}
+
+.content p {
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-secondary-light);
+}
+
+:global(.dark) .content p {
+  color: var(--color-text-secondary-dark);
+}
+
+.fileInputLabel {
+  padding: var(--spacing-sm) var(--spacing-lg);
+  background-color: var(--color-accent-light);
+  color: white;
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.fileInputLabel:hover {
+  background-color: var(--color-accent-hover-light);
+}
+
+:global(.dark) .fileInputLabel {
+  background-color: var(--color-accent-dark);
+}
+
+:global(.dark) .fileInputLabel:hover {
+  background-color: var(--color-accent-hover-dark);
+}
+
+.fileInput {
+  display: none;
+}

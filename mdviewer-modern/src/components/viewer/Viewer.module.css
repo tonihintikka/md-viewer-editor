@@ -1,0 +1,187 @@
+.viewer {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-lg);
+}
+
+.noFileSelected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-secondary-light);
+  font-size: 1.25rem;
+}
+
+:global(.dark) .noFileSelected {
+  color: var(--color-text-secondary-dark);
+}
+
+.fileTitle {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-light);
+  font-size: 1.75rem;
+  font-weight: 600;
+}
+
+:global(.dark) .fileTitle {
+  border-color: var(--color-border-dark);
+}
+
+.markdownContent {
+  line-height: 1.6;
+}
+
+/* Markdown styling */
+.markdownContent h1 {
+  font-size: 2rem;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.3rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+:global(.dark) .markdownContent h1 {
+  border-color: var(--color-border-dark);
+}
+
+.markdownContent h2 {
+  font-size: 1.5rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.markdownContent h3 {
+  font-size: 1.25rem;
+  margin-top: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.markdownContent p {
+  margin-bottom: 1rem;
+}
+
+.markdownContent a {
+  color: var(--color-accent-light);
+  text-decoration: none;
+}
+
+:global(.dark) .markdownContent a {
+  color: var(--color-accent-dark);
+}
+
+.markdownContent a:hover {
+  text-decoration: underline;
+}
+
+.markdownContent ul, .markdownContent ol {
+  margin-bottom: 1rem;
+  padding-left: 2rem;
+}
+
+.markdownContent ul {
+  list-style-type: disc;
+}
+
+.markdownContent ol {
+  list-style-type: decimal;
+}
+
+.markdownContent li {
+  margin-bottom: 0.5rem;
+}
+
+.markdownContent blockquote {
+  border-left: 4px solid var(--color-border-light);
+  padding-left: 1rem;
+  margin-left: 0;
+  margin-bottom: 1rem;
+  color: var(--color-text-secondary-light);
+}
+
+:global(.dark) .markdownContent blockquote {
+  border-color: var(--color-border-dark);
+  color: var(--color-text-secondary-dark);
+}
+
+.markdownContent pre {
+  background-color: var(--color-bg-secondary-light);
+  padding: 1rem;
+  border-radius: var(--border-radius-sm);
+  overflow-x: auto;
+  margin-bottom: 1rem;
+}
+
+:global(.dark) .markdownContent pre {
+  background-color: var(--color-bg-secondary-dark);
+}
+
+.markdownContent code {
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background-color: rgba(0, 0, 0, 0.05);
+  border-radius: var(--border-radius-sm);
+}
+
+:global(.dark) .markdownContent code {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.markdownContent pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+.markdownContent img {
+  max-width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.markdownContent table {
+  border-collapse: collapse;
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.markdownContent table th, .markdownContent table td {
+  border: 1px solid var(--color-border-light);
+  padding: 0.5rem;
+}
+
+:global(.dark) .markdownContent table th, 
+:global(.dark) .markdownContent table td {
+  border-color: var(--color-border-dark);
+}
+
+.markdownContent table th {
+  background-color: var(--color-bg-secondary-light);
+  font-weight: 600;
+}
+
+:global(.dark) .markdownContent table th {
+  background-color: var(--color-bg-secondary-dark);
+}
+
+.mermaidContainer {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.fileContainer {
+  margin-bottom: 3rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+:global(.dark) .fileContainer {
+  border-color: var(--color-border-dark);
+}
+
+.fileContainer:last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}

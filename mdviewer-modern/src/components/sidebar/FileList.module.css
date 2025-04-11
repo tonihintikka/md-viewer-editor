@@ -1,0 +1,111 @@
+.fileList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  margin-bottom: 2px;
+  position: relative;
+}
+
+.fileItem:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+:global(.dark) .fileItem:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.fileItem.active {
+  background-color: rgba(13, 110, 253, 0.1);
+  font-weight: 500;
+}
+
+:global(.dark) .fileItem.active {
+  background-color: rgba(13, 110, 253, 0.2);
+}
+
+.fileIcon {
+  margin-right: var(--spacing-sm);
+  fill: var(--color-text-secondary-light);
+  flex-shrink: 0;
+}
+
+:global(.dark) .fileIcon {
+  fill: var(--color-text-secondary-dark);
+}
+
+.fileName {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 0.875rem;
+}
+
+.removeButton {
+  opacity: 0;
+  background: none;
+  border: none;
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0 var(--spacing-xs);
+  cursor: pointer;
+  color: var(--color-text-secondary-light);
+  transition: opacity var(--transition-fast), color var(--transition-fast);
+}
+
+:global(.dark) .removeButton {
+  color: var(--color-text-secondary-dark);
+}
+
+.fileItem:hover .removeButton {
+  opacity: 1;
+}
+
+.removeButton:hover {
+  color: var(--color-error-light);
+}
+
+:global(.dark) .removeButton:hover {
+  color: var(--color-error-dark);
+}
+
+.fileItem.dragging {
+  opacity: 0.5;
+}
+
+.fileItem.dragOver {
+  border-top: 2px solid var(--color-accent-light);
+}
+
+:global(.dark) .fileItem.dragOver {
+  border-top-color: var(--color-accent-dark);
+}
+
+.emptyState {
+  padding: var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-secondary-light);
+}
+
+:global(.dark) .emptyState {
+  color: var(--color-text-secondary-dark);
+}
+
+.emptyState p {
+  margin-bottom: var(--spacing-xs);
+  font-weight: 500;
+}
+
+.emptyState small {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}

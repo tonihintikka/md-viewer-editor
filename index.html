@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="fi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editori & Katselin</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/theme/material.min.css"> <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.15/mode/markdown/markdown.min.js"></script>
+
+    <style>
+        /* CSS Styles remain the same */
+        :root {
+            --sidebar-bg: #3a3f44; --sidebar-text: #e1e1e1;
+            --sidebar-link-hover-bg: #4f555b; --sidebar-link-hover-text: #ffffff;
+            --content-bg: #ffffff; --content-text: #333;
+            --accent-color: #007bff; --dropzone-border: #cccccc;
+            --dropzone-border-active: var(--accent-color); --dropzone-bg-active: #f0f8ff;
+            --button-bg: #5a6268; --button-text: #ffffff; --button-hover-bg: #4f555b;
+            --delete-btn-color: #dc3545; --delete-btn-hover-bg: #c82333;
+            --drag-over-border: #007bff;
+            --clear-btn-bg: #6c757d; --clear-btn-hover-bg: #5a6268;
+            --edit-btn-bg: #007bff; --edit-btn-hover-bg: #0056b3;
+            --save-btn-bg: #28a745; --save-btn-hover-bg: #218838;
+            --cancel-btn-bg: #ffc107; --cancel-btn-hover-bg: #e0a800; --cancel-btn-text: #212529;
+            --export-btn-bg: #17a2b8; --export-btn-hover-bg: #138496;
+        }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; display: flex; height: 100vh; /* Full height */ background-color: #f4f7f6; color: var(--content-text); overflow: hidden; /* Prevent body scroll */ }
+        #sidebar { width: 250px; background-color: var(--sidebar-bg); color: var(--sidebar-text); padding: 20px; box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); display: flex; flex-direction: column; flex-shrink: 0; }
+        #sidebar h2 { margin-top: 0; border-bottom: 1px solid #555; padding-bottom: 10px; font-weight: 500; font-size: 1.2em; }
+        #file-list-container { flex-grow: 1; overflow-y: auto; /* Scroll only file list */ margin-bottom: 15px; }
+        #file-list { list-style: none; padding: 0; margin: 0; }
+        #file-list li { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; border-radius: 4px; transition: background-color 0.2s ease, opacity 0.2s ease; cursor: grab; }
+        #file-list li:hover { background-color: rgba(255, 255, 255, 0.05); }
+        #file-list li a { flex-grow: 1; padding: 10px 5px; text-decoration: none; color: var(--sidebar-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-radius: 4px 0 0 4px; cursor: pointer; }
+        #file-list li a.active { background-color: var(--sidebar-link-hover-bg); color: var(--sidebar-link-hover-text); }
+        #file-list li a:hover:not(.active) { background-color: rgba(255, 255, 255, 0.1); }
+        .delete-file-btn { background: none; border: none; color: var(--sidebar-text); opacity: 0.6; cursor: pointer; padding: 10px 8px; font-size: 1.1em; line-height: 1; transition: opacity 0.2s ease, color 0.2s ease; border-radius: 0 4px 4px 0; }
+        .delete-file-btn:hover { opacity: 1; color: var(--delete-btn-color); background-color: rgba(220, 53, 69, 0.2); }
+        #sidebar-buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; /* No margin-top needed if list container handles scroll */ }
+        #sidebar-buttons button { background-color: var(--button-bg); color: var(--button-text); border: none; padding: 10px 5px; border-radius: 4px; cursor: pointer; font-size: 0.85em; text-align: center; transition: background-color 0.2s ease; white-space: nowrap; }
+        #sidebar-buttons button:hover { background-color: var(--button-hover-bg); }
+        #clear-all-button { grid-column: 1 / -1; background-color: var(--clear-btn-bg); margin-top: 5px; }
+        #clear-all-button:hover { background-color: var(--clear-btn-hover-bg); }
+        #export-button { background-color: var(--export-btn-bg); } /* Style export button */
+        #export-button:hover { background-color: var(--export-btn-hover-bg); }
+
+        #file-list li.dragging { opacity: 0.5; background: var(--sidebar-link-hover-bg); }
+        #file-list li.drag-over-top { border-top: 2px solid var(--drag-over-border); }
+        #file-list li.drag-over-bottom { border-bottom: 2px solid var(--drag-over-border); }
+
+        #main-content-wrapper { flex-grow: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+        #editor-controls { padding: 10px 20px; background-color: #e9ecef; border-bottom: 1px solid #dee2e6; display: flex; gap: 10px; flex-shrink: 0; }
+        #editor-controls button { padding: 5px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 0.9em; transition: background-color 0.2s ease; }
+        #edit-button { background-color: var(--edit-btn-bg); color: white; }
+        #edit-button:hover { background-color: var(--edit-btn-hover-bg); }
+        #save-button { background-color: var(--save-btn-bg); color: white; }
+        #save-button:hover { background-color: var(--save-btn-hover-bg); }
+        #cancel-button { background-color: var(--cancel-btn-bg); color: var(--cancel-btn-text); }
+        #cancel-button:hover { background-color: var(--cancel-btn-hover-bg); }
+
+        #drop-zone { flex-grow: 1; margin: 0; border: none; border-radius: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; overflow-y: auto; background-color: #fdfdfd; padding: 20px; }
+        #drop-zone.has-content { justify-content: flex-start; align-items: stretch; }
+        #drop-message { color: #888; font-size: 1.1em; padding: 30px; }
+        #markdown-content { width: 100%; max-width: 800px; margin: 0 auto; text-align: left; background-color: var(--content-bg); display: block; }
+        #drop-zone.has-content #drop-message { display: none; }
+
+        #editor-container { flex-grow: 1; overflow: hidden; position: relative; display: none; border-top: 1px solid #dee2e6; }
+        .CodeMirror { height: 100%; font-size: 14px; }
+
+        .file-content-wrapper { margin-bottom: 40px; padding-bottom: 20px; border-bottom: 2px solid #eee; }
+        .file-content-wrapper:last-child { border-bottom: none; margin-bottom: 0; }
+        .file-content-wrapper h2.filename-heading { font-size: 1.4em; color: #555; margin-bottom: 15px; padding-bottom: 5px; border-bottom: 1px dashed #ccc; }
+        #markdown-content .mermaid { display: block; margin-bottom: 1em; text-align: center; line-height: 1; }
+        #markdown-content .mermaid svg { max-width: 100%; height: auto; }
+        #markdown-content h1, #markdown-content h2:not(.filename-heading), #markdown-content h3, #markdown-content h4 { border-bottom: 1px solid #eee; padding-bottom: 0.3em; margin-top: 1.5em; margin-bottom: 1em; }
+        #markdown-content > *:first-child, .file-content-wrapper > *:first-child { margin-top: 0; }
+        #markdown-content h1 { font-size: 2em; } #markdown-content h2:not(.filename-heading) { font-size: 1.6em; } #markdown-content h3 { font-size: 1.3em; }
+        #markdown-content code { background-color: #f0f0f0; padding: 0.2em 0.4em; border-radius: 3px; font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace; font-size: 0.9em; color: #c7254e; }
+        #markdown-content pre { background-color: #f5f5f5; padding: 1em; border: 1px solid #ddd; border-radius: 4px; overflow-x: auto; line-height: 1.4; }
+        #markdown-content pre code { background-color: transparent; padding: 0; border-radius: 0; border: none; color: inherit; font-size: 0.95em; }
+        #markdown-content blockquote { border-left: 4px solid #ccc; padding: 0.5em 1em; color: #666; margin-left: 0; margin-right: 0; background-color: #f9f9f9; }
+        #markdown-content table { border-collapse: collapse; width: auto; margin-bottom: 1em; border: 1px solid #ccc; }
+        #markdown-content th, #markdown-content td { border: 1px solid #ccc; padding: 0.6em 0.9em; }
+        #markdown-content th { background-color: #f0f0f0; font-weight: bold; }
+        #markdown-content tr:nth-child(even) { background-color: #f8f8f8; }
+        #markdown-content img { max-width: 100%; height: auto; display: block; margin-top: 0.5em; margin-bottom: 0.5em; border-radius: 4px; }
+        #markdown-content a { color: var(--accent-color); text-decoration: none; }
+        #markdown-content a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Tiedostot</h2>
+        <div id="file-list-container"> <ul id="file-list"></ul> </div>
+        <div id="sidebar-buttons">
+            <button id="sort-button">Järjestä A-Z</button>
+            <button id="view-toggle-button">Näytä kaikki</button>
+            <button id="export-button">Vie tiedosto</button>
+            <button id="clear-all-button">Tyhjennä kaikki</button>
+        </div>
+    </div>
+
+    <div id="main-content-wrapper">
+        <div id="editor-controls" style="display: none;">
+             <button id="edit-button">Muokkaa</button>
+             <button id="save-button" style="display: none;">Tallenna</button>
+             <button id="cancel-button" style="display: none;">Peruuta</button>
+        </div>
+        <div id="drop-zone">
+            <p id="drop-message">Raahaa & Pudota Markdown (.md) tiedostoja tähän</p>
+            <div id="markdown-content"></div>
+        </div>
+        <div id="editor-container"></div>
+    </div>
+
+    <script>
+        // Get references (unchanged)
+        const editorContainer = document.getElementById('editor-container');
+        const editorControls = document.getElementById('editor-controls');
+        const editButton = document.getElementById('edit-button');
+        const saveButton = document.getElementById('save-button');
+        const cancelButton = document.getElementById('cancel-button');
+        const exportButton = document.getElementById('export-button');
+        const dropZone = document.getElementById('drop-zone');
+        const fileList = document.getElementById('file-list');
+        const markdownContentDiv = document.getElementById('markdown-content');
+        const dropMessage = document.getElementById('drop-message');
+        const viewToggleButton = document.getElementById('view-toggle-button');
+        const sortButton = document.getElementById('sort-button');
+        const clearAllButton = document.getElementById('clear-all-button');
+
+        // State variables (unchanged)
+        let droppedFiles = new Map(); let fileOrder = []; let currentActiveFile = null;
+        let isSingleFileView = true; let isEditing = false; let codeMirrorInstance = null;
+
+        // Storage keys (unchanged)
+        const STORAGE_KEY_FILES = 'markdownViewerFiles'; const STORAGE_KEY_ORDER = 'markdownViewerOrder';
+        const STORAGE_KEY_VIEW_MODE = 'markdownViewerMode'; const STORAGE_KEY_ACTIVE_FILE = 'markdownViewerActiveFile';
+
+        // --- Persistence Functions (unchanged) ---
+        function saveState() { try { const filesObject = Object.fromEntries(droppedFiles); localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(filesObject)); localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(fileOrder)); localStorage.setItem(STORAGE_KEY_VIEW_MODE, isSingleFileView ? 'single' : 'all'); if (currentActiveFile) { localStorage.setItem(STORAGE_KEY_ACTIVE_FILE, currentActiveFile); } else { localStorage.removeItem(STORAGE_KEY_ACTIVE_FILE); } console.log("Tila tallennettu."); } catch (e) { console.error("Virhe tallennettaessa tilaa localStorageen:", e); alert("Tiedostoja ei voitu tallentaa. Selaimen tallennustila saattaa olla täynnä."); } }
+        function loadState() { try { const storedFiles = localStorage.getItem(STORAGE_KEY_FILES); const storedOrder = localStorage.getItem(STORAGE_KEY_ORDER); const storedMode = localStorage.getItem(STORAGE_KEY_VIEW_MODE); const storedActiveFile = localStorage.getItem(STORAGE_KEY_ACTIVE_FILE); if (storedFiles) { const filesObject = JSON.parse(storedFiles); droppedFiles = new Map(Object.entries(filesObject)); console.log("Tiedostot ladattu tallennustilasta."); if (storedOrder) { const parsedOrder = JSON.parse(storedOrder); fileOrder = parsedOrder.filter(filename => droppedFiles.has(filename)); for (const filename of droppedFiles.keys()) { if (!fileOrder.includes(filename)) { fileOrder.push(filename); } } console.log("Järjestys ladattu tallennustilasta."); } else if (droppedFiles.size > 0) { fileOrder = Array.from(droppedFiles.keys()).sort(); console.log("Järjestystä ei löytynyt, alustetaan tiedostoista."); } else { fileOrder = []; } } else { droppedFiles = new Map(); fileOrder = []; } isSingleFileView = (storedMode !== 'all'); currentActiveFile = storedActiveFile || null; if (currentActiveFile && !droppedFiles.has(currentActiveFile)) { currentActiveFile = null; } console.log(`Näkymätila ladattu: ${isSingleFileView ? 'Yksittäinen' : 'Kaikki'}`); console.log(`Aktiivinen tiedosto ladattu: ${currentActiveFile}`); redrawSidebar(); renderContent(); } catch (e) { console.error("Virhe ladattaessa tilaa localStorage:sta:", e); droppedFiles = new Map(); fileOrder = []; isSingleFileView = true; currentActiveFile = null; redrawSidebar(); renderContent(); } }
+
+
+        // --- Initialize Mermaid (unchanged) ---
+        mermaid.initialize({ startOnLoad: false }); console.log("Mermaid alustettu.");
+
+        // --- Utility Function: Sanitize Filename for ID (unchanged) ---
+        function sanitizeForId(filename) { return 'file--' + filename.replace(/[^a-zA-Z0-9-_]/g, '-'); }
+
+        // --- Editor Initialization (unchanged) ---
+        function initializeEditor() { /* ... */ }
+
+        // --- UI Update Functions (unchanged) ---
+        function redrawSidebar() { /* ... */ }
+        function addFileToSidebarDOM(filename) { /* ... */ }
+
+        // --- Core Rendering Logic (REVISED for visibility) ---
+        async function renderContent() {
+            console.log(`Renderöidään sisältöä. Tila: ${isSingleFileView ? 'Yksittäinen' : 'Kaikki'}, Muokkaus: ${isEditing}`);
+            updateEditorControls(); // Update buttons visibility first
+
+            if (isEditing) {
+                editorContainer.style.display = 'block';
+                dropZone.style.display = 'none'; // Hide drop zone when editing
+                if (codeMirrorInstance) codeMirrorInstance.refresh();
+                return; // Stop here if editing
+            }
+
+            // --- If NOT editing ---
+            editorContainer.style.display = 'none'; // Hide editor
+            dropZone.style.display = 'flex'; // SHOW drop zone container
+            markdownContentDiv.innerHTML = ''; // Clear rendered content div
+            markdownContentDiv.style.display = 'none'; // Hide content div initially
+            dropZone.classList.remove('has-content'); // Remove class
+            dropMessage.style.display = 'block'; // Show drop message initially
+
+            viewToggleButton.textContent = isSingleFileView ? "Näytä kaikki" : "Näytä yksittäinen";
+
+            let contentWasRendered = false; // Flag to track if content was displayed
+            try {
+                if (isSingleFileView) {
+                    if (currentActiveFile && droppedFiles.has(currentActiveFile)) {
+                        await displaySingleFile(currentActiveFile); // Await the display
+                        contentWasRendered = true; // Mark that content was shown
+                    }
+                } else { // All files view
+                    if (droppedFiles.size > 0) {
+                        await displayAllFiles(); // Await the display
+                        contentWasRendered = true; // Mark that content was shown
+                    }
+                }
+            } catch (error) {
+                 console.error("Virhe renderöitäessä sisältöä:", error);
+                 contentWasRendered = false; // Ensure flag is false on error
+            }
+
+            // Final visibility check based on whether content was actually rendered
+            if (contentWasRendered) {
+                dropMessage.style.display = 'none'; // Hide message
+                markdownContentDiv.style.display = 'block'; // Show content div
+                dropZone.classList.add('has-content'); // Add class
+            } else {
+                 // If no content was rendered (no files, no active file, or error),
+                 // ensure message is visible and content area hidden
+                 dropMessage.style.display = 'block';
+                 markdownContentDiv.style.display = 'none';
+                 dropZone.classList.remove('has-content');
+            }
+        }
+
+        // REMOVED visibility logic from here
+        async function displaySingleFile(filename) {
+            if (!droppedFiles.has(filename)) return;
+            const content = droppedFiles.get(filename);
+            console.log(`Näytetään yksittäinen tiedosto: ${filename}`);
+            try {
+                markdownContentDiv.innerHTML = marked.parse(content);
+                await renderMermaidDiagrams(markdownContentDiv);
+                dropZone.scrollTop = 0;
+            } catch (error) {
+                 console.error('Virhe jäsennettäessä Markdownia:', error);
+                 markdownContentDiv.innerHTML = `<p style="color: red;">Virhe jäsennettäessä Markdownia tiedostolle ${filename}.</p>`;
+                 dropZone.scrollTop = 0;
+                 throw error; // Re-throw error so renderContent knows it failed
+            }
+        }
+
+        // REMOVED visibility logic from here
+        async function displayAllFiles() {
+            console.log("Näytetään kaikki tiedostot");
+             markdownContentDiv.innerHTML = '';
+             if (droppedFiles.size === 0) return;
+             // Visibility handled by renderContent
+
+             const sortedFilenames = fileOrder;
+             for (const filename of sortedFilenames) {
+                 if (!droppedFiles.has(filename)) continue;
+                 const content = droppedFiles.get(filename);
+                 const fileId = sanitizeForId(filename);
+                 const wrapperDiv = document.createElement('div');
+                 wrapperDiv.id = fileId; wrapperDiv.className = 'file-content-wrapper';
+                 const heading = document.createElement('h2');
+                 heading.className = 'filename-heading'; heading.textContent = filename;
+                 wrapperDiv.appendChild(heading);
+                 try {
+                     const parsedContentHtml = marked.parse(content);
+                     const contentDiv = document.createElement('div'); contentDiv.innerHTML = parsedContentHtml; wrapperDiv.appendChild(contentDiv);
+                 } catch(parseError) {
+                      console.error(`Virhe jäsennettäessä Markdownia tiedostolle ${filename}:`, parseError);
+                      const errorP = document.createElement('p'); errorP.style.color = 'red'; errorP.textContent = `Virhe jäsennettäessä sisältöä tiedostolle ${filename}.`;
+                      wrapperDiv.appendChild(errorP);
+                      // Don't re-throw here, just show error for this file and continue
+                 }
+                 markdownContentDiv.appendChild(wrapperDiv);
+             }
+             await renderMermaidDiagrams(markdownContentDiv);
+             dropZone.scrollTop = 0;
+        }
+
+        async function renderMermaidDiagrams(containerElement) { /* ... as before ... */ }
+
+        // --- Editor Control Logic (unchanged) ---
+        function updateEditorControls() { /* ... */ }
+        function startEditing() { /* ... */ }
+        function saveEdits() { /* ... */ }
+        function cancelEdits() { /* ... */ }
+        function stopEditing(saved) { /* ... */ }
+
+        // --- Export Functionality (unchanged) ---
+        function exportContent() { /* ... */ }
+
+        // --- Event Listeners (unchanged) ---
+        viewToggleButton.addEventListener('click', () => { if(isEditing && !confirm("Haluatko poistua muokkaustilasta tallentamatta?")) return; stopEditing(false); isSingleFileView = !isSingleFileView; saveState(); renderContent(); });
+        sortButton.addEventListener('click', () => { if(isEditing) return; console.log("Järjestetään tiedostot A-Z..."); fileOrder.sort((a, b) => a.localeCompare(b)); redrawSidebar(); saveState(); if (!isSingleFileView) { renderContent(); } });
+        clearAllButton.addEventListener('click', () => { if(isEditing && !confirm("Haluatko poistua muokkaustilasta tallentamatta?")) return; stopEditing(false); if (confirm("Haluatko varmasti poistaa kaikki ladatut tiedostot ja niiden tiedot?")) { clearAllFiles(); } });
+        exportButton.addEventListener('click', exportContent);
+        editButton.addEventListener('click', startEditing);
+        saveButton.addEventListener('click', saveEdits);
+        cancelButton.addEventListener('click', cancelEdits);
+        dropZone.addEventListener('dragover', (event) => { if(isEditing) return; event.preventDefault(); dropZone.classList.add('dragover'); }); // Prevent drop if editing
+        dropZone.addEventListener('dragleave', (event) => { if(isEditing) return; event.preventDefault(); dropZone.classList.remove('dragover'); });// Prevent drop if editing
+        dropZone.addEventListener('drop', (event) => { if(isEditing) return; event.preventDefault(); dropZone.classList.remove('dragover'); const files = event.dataTransfer.files; if (files.length > 0) { handleFiles(files); } });// Prevent drop if editing
+        function handleFiles(files) { /* ... as before ... */ }
+        fileList.addEventListener('click', (event) => { /* ... as before ... */ });
+        function removeFile(filename) { /* ... as before ... */ }
+        markdownContentDiv.addEventListener('click', (event) => { if (isEditing) return; /* ... rest as before ... */ });
+        let draggedItemFilename = null;
+        fileList.addEventListener('dragstart', (event) => { if(isEditing) { event.preventDefault(); return; } /* ... rest as before ... */ });
+        fileList.addEventListener('dragend', (event) => { /* ... as before ... */ });
+        fileList.addEventListener('dragover', (event) => { if(isEditing) return; /* ... rest as before ... */ });
+        fileList.addEventListener('dragleave', (event) => { /* ... as before ... */ });
+        fileList.addEventListener('drop', (event) => { if(isEditing) return; /* ... rest as before ... */ });
+        function clearAllFiles() { /* ... as before ... */ }
+
+        // --- Initial Load ---
+        document.addEventListener('DOMContentLoaded', () => { loadState(); });
+
+        // --- Functions copied for context ---
+        function saveState() { try { const filesObject = Object.fromEntries(droppedFiles); localStorage.setItem(STORAGE_KEY_FILES, JSON.stringify(filesObject)); localStorage.setItem(STORAGE_KEY_ORDER, JSON.stringify(fileOrder)); localStorage.setItem(STORAGE_KEY_VIEW_MODE, isSingleFileView ? 'single' : 'all'); if (currentActiveFile) { localStorage.setItem(STORAGE_KEY_ACTIVE_FILE, currentActiveFile); } else { localStorage.removeItem(STORAGE_KEY_ACTIVE_FILE); } console.log("Tila tallennettu."); } catch (e) { console.error("Virhe tallennettaessa tilaa localStorageen:", e); alert("Tiedostoja ei voitu tallentaa. Selaimen tallennustila saattaa olla täynnä."); } }
+        function loadState() { try { const storedFiles = localStorage.getItem(STORAGE_KEY_FILES); const storedOrder = localStorage.getItem(STORAGE_KEY_ORDER); const storedMode = localStorage.getItem(STORAGE_KEY_VIEW_MODE); const storedActiveFile = localStorage.getItem(STORAGE_KEY_ACTIVE_FILE); if (storedFiles) { const filesObject = JSON.parse(storedFiles); droppedFiles = new Map(Object.entries(filesObject)); console.log("Tiedostot ladattu tallennustilasta."); if (storedOrder) { const parsedOrder = JSON.parse(storedOrder); fileOrder = parsedOrder.filter(filename => droppedFiles.has(filename)); for (const filename of droppedFiles.keys()) { if (!fileOrder.includes(filename)) { fileOrder.push(filename); } } console.log("Järjestys ladattu tallennustilasta."); } else if (droppedFiles.size > 0) { fileOrder = Array.from(droppedFiles.keys()).sort(); console.log("Järjestystä ei löytynyt, alustetaan tiedostoista."); } else { fileOrder = []; } } else { droppedFiles = new Map(); fileOrder = []; } isSingleFileView = (storedMode !== 'all'); currentActiveFile = storedActiveFile || null; if (currentActiveFile && !droppedFiles.has(currentActiveFile)) { currentActiveFile = null; } console.log(`Näkymätila ladattu: ${isSingleFileView ? 'Yksittäinen' : 'Kaikki'}`); console.log(`Aktiivinen tiedosto ladattu: ${currentActiveFile}`); redrawSidebar(); renderContent(); } catch (e) { console.error("Virhe ladattaessa tilaa localStorage:sta:", e); droppedFiles = new Map(); fileOrder = []; isSingleFileView = true; currentActiveFile = null; redrawSidebar(); renderContent(); } }
+        function redrawSidebar() { fileList.innerHTML = ''; fileOrder.forEach(filename => { if (droppedFiles.has(filename)) { addFileToSidebarDOM(filename); } }); if (currentActiveFile) { const activeLink = fileList.querySelector(`a[data-filename="${currentActiveFile}"]`); if (activeLink) { activeLink.classList.add('active'); } } console.log("Sivupalkki piirretty uudelleen."); }
+        function addFileToSidebarDOM(filename) { const listItem = document.createElement('li'); listItem.draggable = true; listItem.dataset.filename = filename; const link = document.createElement('a'); link.href = '#'; link.textContent = filename; link.dataset.filename = filename; link.title = filename; if (filename === currentActiveFile) { link.classList.add('active'); } const deleteBtn = document.createElement('button'); deleteBtn.className = 'delete-file-btn'; deleteBtn.innerHTML = '&times;'; deleteBtn.title = `Poista ${filename}`; deleteBtn.dataset.filename = filename; listItem.appendChild(link); listItem.appendChild(deleteBtn); fileList.appendChild(listItem); }
+        async function renderMermaidDiagrams(containerElement) { const mermaidNodes = containerElement.querySelectorAll('.language-mermaid'); if (mermaidNodes.length > 0) { console.log(`Attempting to render ${mermaidNodes.length} Mermaid diagrams...`); try { await mermaid.run({ nodes: mermaidNodes }); console.log("Mermaid rendering complete."); } catch (mermaidError) { console.error("Mermaid rendering error:", mermaidError); const errorP = document.createElement('p'); errorP.style.color = 'orange'; errorP.style.textAlign = 'left'; errorP.textContent = `Note: Could not render one or more Mermaid diagrams. Check console for details.`; markdownContentDiv.prepend(errorP); } } else { console.log("No Mermaid diagrams found to render."); } }
+        function handleFiles(files) { let filesProcessed = 0; let lastProcessedFilename = null; const totalFilesToProcess = files.length; let newlyAddedFiles = []; for (const file of files) { if (file.name.endsWith('.md') || file.type === 'text/markdown') { const reader = new FileReader(); reader.onload = (e) => { const content = e.target.result; const filename = file.name; const isNewFile = !droppedFiles.has(filename); droppedFiles.set(filename, content); if (isNewFile) { newlyAddedFiles.push(filename); } console.log(`Ladattu: ${filename}`); lastProcessedFilename = filename; filesProcessed++; checkCompletion(); }; reader.onerror = (e) => { console.error("Virhe luettaessa tiedostoa:", file.name, e); alert(`Virhe luettaessa tiedostoa: ${file.name}`); filesProcessed++; checkCompletion(); }; reader.readAsText(file); } else { console.log(`Ohitettu ei-markdown tiedosto: ${file.name}`); filesProcessed++; checkCompletion(); } } function checkCompletion() { if (filesProcessed === totalFilesToProcess) { console.log("Tiedostojen käsittely valmis tälle erälle."); fileOrder.push(...newlyAddedFiles); if (lastProcessedFilename && (isSingleFileView || totalFilesToProcess === 1)) { currentActiveFile = lastProcessedFilename; } redrawSidebar(); saveState(); renderContent(); } } }
+        function removeFile(filename) { if (droppedFiles.has(filename)) { droppedFiles.delete(filename); const index = fileOrder.indexOf(filename); if (index > -1) { fileOrder.splice(index, 1); } console.log(`Poistettu tiedosto: ${filename}`); if (currentActiveFile === filename) { currentActiveFile = null; } redrawSidebar(); saveState(); renderContent(); } }
+        function clearAllFiles() { console.log("Tyhjennetään kaikki tiedot..."); droppedFiles = new Map(); fileOrder = []; currentActiveFile = null; isSingleFileView = true; fileList.innerHTML = ''; markdownContentDiv.innerHTML = ''; dropZone.classList.remove('has-content'); markdownContentDiv.style.display = 'none'; dropMessage.style.display = 'block'; viewToggleButton.textContent = "Näytä kaikki"; saveState(); alert("Kaikki tiedostot poistettu."); }
+        function initializeEditor() { if (!codeMirrorInstance) { try { codeMirrorInstance = CodeMirror(editorContainer, { mode: 'markdown', lineNumbers: true, theme: 'material', lineWrapping: true }); console.log("CodeMirror alustettu."); } catch (error) { console.error("CodeMirrorin alustus epäonnistui:", error); alert("Editorin lataus epäonnistui. Varmista, että olet yhteydessä internetiin."); editorControls.style.display = 'none'; } } }
+        function updateEditorControls() { if (isSingleFileView && currentActiveFile) { editorControls.style.display = 'flex'; if (isEditing) { editButton.style.display = 'none'; saveButton.style.display = 'inline-block'; cancelButton.style.display = 'inline-block'; } else { editButton.style.display = 'inline-block'; saveButton.style.display = 'none'; cancelButton.style.display = 'none'; } } else { editorControls.style.display = 'none'; if (isEditing) { stopEditing(false); } } }
+        function startEditing() { if (!isSingleFileView || !currentActiveFile || !droppedFiles.has(currentActiveFile)) { alert("Valitse ensin tiedosto muokattavaksi."); return; } if (isEditing) return; initializeEditor(); if (!codeMirrorInstance) return; const content = droppedFiles.get(currentActiveFile); isEditing = true; codeMirrorInstance.setValue(content || ''); renderContent(); setTimeout(() => codeMirrorInstance.refresh(), 1); console.log(`Aloitetaan muokkaus: ${currentActiveFile}`); }
+        function saveEdits() { if (!isEditing || !codeMirrorInstance || !currentActiveFile) return; const newContent = codeMirrorInstance.getValue(); droppedFiles.set(currentActiveFile, newContent); saveState(); console.log(`Tallennettu muutokset: ${currentActiveFile}`); stopEditing(true); renderContent(); }
+        function cancelEdits() { if (!isEditing) return; if (confirm("Haluatko varmasti peruuttaa muutokset? Tallentamattomat tiedot menetetään.")) { console.log(`Peruutetaan muokkaukset: ${currentActiveFile}`); stopEditing(false); renderContent(); } }
+        function stopEditing(saved) { isEditing = false; console.log(`Lopetetaan muokkaus. Tallennettu: ${saved}`); }
+        function exportContent() { let markdownText = ''; let filename = 'export.md'; if (isSingleFileView && currentActiveFile && droppedFiles.has(currentActiveFile)) { markdownText = droppedFiles.get(currentActiveFile); filename = currentActiveFile; console.log(`Viedään yksittäinen tiedosto: ${filename}`); } else if (!isSingleFileView && fileOrder.length > 0) { console.log("Viedään kaikki tiedostot..."); filename = 'kaikki_tiedostot.md'; fileOrder.forEach((fn, index) => { if (droppedFiles.has(fn)) { if (index > 0) { markdownText += '\n\n---\n\n'; } markdownText += `## ${fn}\n\n`; markdownText += droppedFiles.get(fn); } }); } else { alert("Ei vietävää sisältöä. Valitse tiedosto tai vaihda 'Näytä kaikki' -näkymään."); return; } try { const blob = new Blob([markdownText], { type: 'text/markdown;charset=utf-8' }); const url = URL.createObjectURL(blob); const link = document.createElement('a'); link.setAttribute('href', url); link.setAttribute('download', filename); link.style.visibility = 'hidden'; document.body.appendChild(link); link.click(); document.body.removeChild(link); URL.revokeObjectURL(url); console.log("Vienti onnistui."); } catch (error) { console.error("Virhe viennissä:", error); alert("Tiedoston vienti epäonnistui."); } }
+
+
+    </script>
+</body>
+</html>
