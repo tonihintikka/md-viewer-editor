@@ -11,6 +11,13 @@ Welcome to the documentation for the Modern Markdown Viewer application. This do
 - [Developer Guide](developer-guide.md)
 - [Troubleshooting](troubleshooting.md)
 
+## Feature Documentation
+
+- [Mermaid Diagram Support](mermaid-support.md)
+  - [Finnish Character Support in Mermaid](mermaid-finnish.md)
+  - [Finnish Mermaid Examples](mermaid-finnish-example.md)
+  - [Technical Improvements for Mermaid](mermaid-improvements.md)
+
 ## Quick Start
 
 The Modern Markdown Viewer is a browser-based application that allows you to:

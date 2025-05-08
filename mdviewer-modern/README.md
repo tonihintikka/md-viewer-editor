@@ -13,6 +13,28 @@ A modern, modular Markdown viewer and editor built with React and Vite.
 - 💾 Local storage for persistence
 - 📤 Export functionality
 - 🔄 Drag and drop file management
+- 🌓 **Enhanced Mermaid diagram support**
+- 🖼️ GitHub Flavored Markdown support (tables, task lists, etc.)
+- 🔍 Syntax highlighting for code blocks
+- 🧩 Modular, maintainable architecture
+
+### Mermaid Diagram Support
+
+Create beautiful diagrams and charts directly in your markdown with the built-in Mermaid.js integration. Simply write your diagram definition in a code block with the `mermaid` language identifier:
+
+```mermaid
+graph TD
+    A[Start] --> B{Is it working?}
+    B -->|Yes| C[Great!]
+    B -->|No| D[Debug]
+    D --> B
+```
+
+This will automatically render as:
+
+![Mermaid Diagram Example](docs/mermaid-example.png)
+
+MDViewer supports all diagram types available in Mermaid, including flowcharts, sequence diagrams, class diagrams, state diagrams, Gantt charts, and more. See the [Mermaid documentation](docs/mermaid-support.md) for details.
 
 ## Getting Started
 
